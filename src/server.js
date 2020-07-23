@@ -20,5 +20,4 @@ const handleListening = () => console.log(`✅Server running: http://localhost:$
 
 const server = app.listen(PORT, handleListening);
 const io = socketIO.listen(server);
-let sockets = [];
 io.on('connection', (socket) => socketController(socket));

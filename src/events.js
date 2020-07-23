@@ -1,5 +1,10 @@
 const events = {
-    setNickname: "setNickname"
+    setNickname: "setNickname",
+    newUser: "newUser",
+    disconnect: "disconnect",
+    disconnected: "disconnected",
+    sendMsg: "sendMsg",
+    newMsg: "newMsg"
 }
 
 export default events;
