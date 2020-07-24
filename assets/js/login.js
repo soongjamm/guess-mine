@@ -16,20 +16,21 @@ const logIn = (nickname) => {
     initSockets(socket);
 }
 
+if (nickname === null) {
+    body.className = LOGGED_OUT;
+} else {
+    body.className = LOGGED_IN;
+    logIn(nickname);
+}
+
 const handleFormSubmit = (e) => {
     e.preventDefault();
     const input = loginForm.querySelector('input');
     const { value } = input // input.value와 같다.
     input.value = "";
     localStorage.setItem(NICKNAME, value);
-    logIn(value);
-}
-
-if (nickname === null) {
-    body.className = LOGGED_OUT;
-} else {
     body.className = LOGGED_IN;
-    logIn(nickname);
+    logIn(value);
 }
 
 if (loginForm) {
