@@ -42,10 +42,13 @@ const strokePath = (x, y, color = null) => {
     let currentColor = ctx.strokeStyle;
     if (color !== null) {
         ctx.strokeStyle = color;
+    } else if (color === null) {
+        ctx.strokeStyle = INITIAL_COLOR;
     }
     ctx.lineTo(x, y);
     ctx.stroke();
     ctx.strokeStyle = currentColor;
+    console.log(ctx.strokeStyle);
 };
 
 function onMouseMove(event) {

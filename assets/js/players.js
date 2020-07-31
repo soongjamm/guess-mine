@@ -3,6 +3,7 @@ import { disableChat, enableChat } from "./chat";
 
 const board = document.getElementById('jsPBoard');
 const notifs = document.getElementById('jsNotifs');
+const timer = document.getElementById('jsTimer');
 
 const addPlayers = (players) => {
     board.innerHTML = '';
@@ -16,6 +17,11 @@ const setNotifs = (text) => {
     notifs.innerText = '';
     notifs.innerText = text;
 }
+const setTimer = (t) => {
+    let time = parseInt(t) - 0;
+    timer.innerText = time;
+}
+
 export const handlePlayerUpdate = ({ sockets }) => addPlayers(sockets);
 export const handleGameStarted = () => {
     setNotifs('');
@@ -26,7 +32,7 @@ export const handleGameStarted = () => {
 export const handleLeaderNotif = ({ word }) => {
     enableCanvas();
     showCanvasControls();
-    setNotifs(`You ara the leader. paint : ${word}`);
+    setNotifs(`You are the leader. paint : ${word}`);
     disableChat();
 }
 export const handleGameEnded = () => {
@@ -39,4 +45,8 @@ export const handleGameEnded = () => {
 export const handleGameStarting = () => {
     hideCanvasControls();
     setNotifs('Game will start soon.');
+}
+
+export const handleShowTimer = (time) => {
+    setTimer(time);
 }

@@ -10,6 +10,9 @@ let inProgress = false;
 let word = null;
 let leader = null;
 let timeout = null;
+let interval = null;
+const TIMEOUT_MSEC = 10000;
+let remain_time = null;
 
 const chooseLeader = () => sockets[Math.floor(Math.random() * sockets.length)];
 
@@ -18,27 +21,29 @@ const socketController = (socket, io) => {
     const broadcast = (event, data) => socket.broadcast.emit(event, data);
     const superBroadcast = (event, data) => io.emit(event, data);
     const sendPlayerUpdate = () => superBroadcast(events.playerUpdate, { sockets });
-    const startGame = () => {
-        if (sockets.length > 1) {
-            if (inProgress === false) {
-                inProgress = true;
-                leader = chooseLeader();
-                word = chooseWord();
-                superBroadcast(events.gameStarting);
-                setTimeout(() => {
-                    superBroadcast(events.gameStarted);
-                    io.to(leader.id).emit(events.leaderNotif, { word });
-                    timeout = setTimeout(() => endGame(), 30000);
-                }, 3000);
-            }
-        }
+    const setIntervalImmedi = (func, msec) => {
+        func();
+        return setInterval(func, msec);
+    };
+    const clearGame = () => {
+        superBroadcast(events.showTimer, 0);
+        clearTimeout(timeout);
+        timeout = null;
+        clearInterval(interval);
+        interval = null;
     }
+    const setTimer = () => {
+        superBroadcast(events.showTimer, remain_time);
+        remain_time -= 1;
+    };
     const endGame = () => {
-        if (timeout !== null) timeout = null;
+        if (timeout !== null) {
+            clearGame();
+        }
         inProgress = false;
         superBroadcast(events.gameEnded);
         setTimeout(() => startGame(), 2000)
-    }
+    };
     const addPoints = (id) => {
         sockets = sockets.map(socket => {
             if (socket.id === id) {
@@ -48,6 +53,26 @@ const socketController = (socket, io) => {
         });
         sendPlayerUpdate();
         endGame();
+    };
+    const initTimer = () => {
+        remain_time = TIMEOUT_MSEC / 1000;
+    }
+    const startGame = () => {
+        if (sockets.length > 1) {
+            if (inProgress === false && timeout === null && interval === null) {
+                inProgress = true;
+                leader = chooseLeader();
+                word = chooseWord();
+                superBroadcast(events.gameStarting);
+                setTimeout(() => {
+                    superBroadcast(events.gameStarted);
+                    io.to(leader.id).emit(events.leaderNotif, { word });
+                    initTimer();
+                    interval = setIntervalImmedi(setTimer, 1000);
+                    timeout = setTimeout(() => endGame(), TIMEOUT_MSEC);
+                }, 3000);
+            }
+        }
     }
 
     socket.on(events.setNickname, ({ nickname }) => {
@@ -97,5 +122,7 @@ const socketController = (socket, io) => {
         broadcast(events.filled, { color });
     })
 };
+
+// setInterval(() => console.log(sockets), 1000);
 
 export default socketController;
