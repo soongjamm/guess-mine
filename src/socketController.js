@@ -37,7 +37,7 @@ const socketController = (socket, io) => {
         remain_time -= 1;
     };
     const endGame = () => {
-        if (timeout !== null) {
+        if (timeout !== null || interval !== null) {
             clearGame();
         }
         inProgress = false;
@@ -86,6 +86,7 @@ const socketController = (socket, io) => {
     })
     socket.on(events.disconnect, () => {
         sockets = sockets.filter(aSocket => aSocket.id !== socket.id);
+        console.log(sockets.length, " 명 접속 중");
         if (sockets.length === 1) {
             endGame();
         } else if (leader) {

@@ -42,13 +42,14 @@ const strokePath = (x, y, color = null) => {
     let currentColor = ctx.strokeStyle;
     if (color !== null) {
         ctx.strokeStyle = color;
-    } else if (color === null) {
+    } else if (color === null && ctx.strokeStyle === null) {
+        console.log('color===null')
         ctx.strokeStyle = INITIAL_COLOR;
     }
     ctx.lineTo(x, y);
     ctx.stroke();
     ctx.strokeStyle = currentColor;
-    console.log(ctx.strokeStyle);
+    console.log(ctx.strokeStyle, x, y);
 };
 
 function onMouseMove(event) {
@@ -58,7 +59,7 @@ function onMouseMove(event) {
         beginPath(x, y);
         getSocket().emit(window.events.beginPath, { x, y });
     } else {
-        strokePath(x, y);
+        strokePath(x, y, ctx.strokeStyle);
         getSocket().emit(window.events.strokePath, { x, y, color: ctx.strokeStyle });
     }
 }
