@@ -37,8 +37,10 @@
     animation: notification 0.5s ease-out forwards,
       dissapear 0.5s ease-in forwards;
     animation-delay: 0.5s, 2s;
-
     color: white;
+    &.newHost {
+      bottom: 75px;
+    }
   }
 
   .notifs {

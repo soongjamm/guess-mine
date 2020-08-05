@@ -29,10 +29,10 @@ export const handleGameStarted = () => {
     hideCanvasControls();
     enableChat();
 }
-export const handleLeaderNotif = ({ word }) => {
+export const handlePainterNotif = ({ word }) => {
     enableCanvas();
     showCanvasControls();
-    setNotifs(`You are the leader. paint : ${word}`);
+    setNotifs(`You are the painter. paint : ${word}`);
     disableChat();
 }
 export const handleGameEnded = () => {

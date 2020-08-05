@@ -8,18 +8,26 @@ import { chooseWord } from '../assets/js/words';
 let sockets = [];
 let inProgress = false;
 let word = null;
-let leader = null;
+let painter = null;
 let timeout = null;
 let interval = null;
 const TIMEOUT_MSEC = 10000;
 let remain_time = null;
 
-const chooseLeader = () => sockets[Math.floor(Math.random() * sockets.length)];
+let host = null;
 
+const choosePainter = () => sockets[Math.floor(Math.random() * sockets.length)];
+const randomHost = () => sockets[Math.floor(Math.random(sockets.length))];
 
 const socketController = (socket, io) => {
     const broadcast = (event, data) => socket.broadcast.emit(event, data);
     const superBroadcast = (event, data) => io.emit(event, data);
+    const notifyHost = () => {
+        io.to(host.id).emit(events.setHost);
+        const nickname = host.nickname;
+        broadcast(events.newHost, { nickname });
+        console.log(host, "새 호스트정보")
+    }
     const sendPlayerUpdate = () => superBroadcast(events.playerUpdate, { sockets });
     const setIntervalImmedi = (func, msec) => {
         func();
@@ -41,13 +49,19 @@ const socketController = (socket, io) => {
             clearGame();
         }
         inProgress = false;
+        painter = null;
         superBroadcast(events.gameEnded);
-        setTimeout(() => startGame(), 2000)
+        if (host === null) {
+            setHost(painter);
+        }
+        console.log(host.nickname);
+        superBroadcast(events.notifHost, host);
     };
     const addPoints = (id) => {
         sockets = sockets.map(socket => {
             if (socket.id === id) {
                 socket.score += 10;
+                setHost(socket);
             }
             return socket;
         });
@@ -61,19 +75,36 @@ const socketController = (socket, io) => {
         if (sockets.length > 1) {
             if (inProgress === false && timeout === null && interval === null) {
                 inProgress = true;
-                leader = chooseLeader();
+                painter = choosePainter();
                 word = chooseWord();
                 superBroadcast(events.gameStarting);
                 setTimeout(() => {
                     superBroadcast(events.gameStarted);
-                    io.to(leader.id).emit(events.leaderNotif, { word });
+                    io.to(painter.id).emit(events.painterNotif, { word });
+                    superBroadcast(events.removeHost);
+                    io.to(host.id).emit(events.setHost);
                     initTimer();
+                    emptyHost();
                     interval = setIntervalImmedi(setTimer, 1000);
                     timeout = setTimeout(() => endGame(), TIMEOUT_MSEC);
                 }, 3000);
             }
         }
     }
+    const setHost = (socket) => {
+        host = socket;
+        notifyHost();
+    }
+    const emptyHost = () => {
+        host = null;
+    }
+    const checkReady = () => {
+        // sockets.
+    }
+
+    // ///////////////// ///
+    // --- socket.on --- //
+    // //////////////// ///
 
     socket.on(events.setNickname, ({ nickname }) => {
         socket.nickname = nickname;
@@ -81,17 +112,25 @@ const socketController = (socket, io) => {
         broadcast(events.newUser, { nickname })
         sendPlayerUpdate();
         if (sockets.length === 2) {
-            startGame();
+            // startGame();
+        } else if (sockets.length === 1) {
+            setHost(sockets[0]);
         }
     })
     socket.on(events.disconnect, () => {
         sockets = sockets.filter(aSocket => aSocket.id !== socket.id);
-        console.log(sockets.length, " 명 접속 중");
         if (sockets.length === 1) {
-            endGame();
-        } else if (leader) {
-            if (leader.id === socket.id) {
+            if (inProgress) endGame();
+            if (host.id !== sockets[0].id) {
+                setHost(sockets[0]);
+            }
+        } else if (painter) {
+            if (painter.id === socket.id) {
                 endGame();
+            }
+        } else if (host) {
+            if (host.id === socket.id) {
+                host = randomHost();
             }
         }
         broadcast(events.disconnected, { nickname: socket.nickname });
@@ -122,8 +161,13 @@ const socketController = (socket, io) => {
     socket.on(events.fill, ({ color }) => {
         broadcast(events.filled, { color });
     })
+
+    socket.on(events.startClicked, ({ socket }) => {
+        checkReady();
+        // console.log(socket);
+    })
 };
 
-// setInterval(() => console.log(sockets), 1000);
+setInterval(() => console.log(sockets), 5000)
 
 export default socketController;

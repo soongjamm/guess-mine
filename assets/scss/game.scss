@@ -72,5 +72,52 @@
     }
     .chat {
       width: 18%;
+      .playBtn {
+        button {
+          border-radius: 5px;
+          padding: 5px 7px;
+          min-width: 50px;
+          cursor: pointer;
+          transition: transform 0.1s linear;
+          box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11),
+              0 1px 3px rgba(0, 0, 0, 0.08);
+          border: 2px solid rgb(68, 68, 126);
+          font-size: 14px;
+          &:active {
+            transform: scale(0.98);
+          }
+          &:hover {
+            color: red;
+          }
+          &.btnClicked {
+            border: 2px solid rgb(100, 100, 100);
+            color: rgb(142, 142, 147);
+            &:hover {
+              color: rgb(136, 69, 69);
+            }
+          }
+        }
+        .readyBtn {
+          display:block;
+          &.clicked {
+            background-color: rgb(114, 114, 69);
+            color: rgba(255, 255, 0, 0.582);
+            &:hover {
+              color: yellow;
+            }
+          } 
+        }
+        .startBtn {
+          display:none;
+        } 
+        &.host {
+          .readyBtn {
+            display:none;
+          }
+          .startBtn {
+            display:block;
+          }
+        }
+      }
     }
   }
